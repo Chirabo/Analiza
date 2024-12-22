@@ -1,0 +1,168 @@
+import numpy as np
+
+def is_dominant_diagonal(matrix):
+    """
+    Check if the matrix has a dominant diagonal.
+
+    Parameters:
+    matrix (np.ndarray): The coefficient matrix.
+
+    Returns:
+    bool: True if the matrix has a dominant diagonal, False otherwise.
+    """
+    for i in range(len(matrix)):
+        row_sum = sum(abs(matrix[i][j]) for j in range(len(matrix)) if j != i)
+        if abs(matrix[i][i]) <= row_sum:
+            return False
+    return True
+
+def swap_rows_for_dominant_diagonal(matrix, vector):
+    """
+    Attempt to swap rows to achieve a dominant diagonal in the matrix.
+
+    Parameters:
+    matrix (np.ndarray): The coefficient matrix.
+    vector (np.ndarray): The vector of constants.
+
+    Returns:
+    tuple: The modified matrix and vector.
+    """
+    n = len(matrix)
+    for i in range(n):
+        max_index = i
+        max_value = abs(matrix[i][i])
+        for j in range(i + 1, n):
+            if abs(matrix[j][i]) > max_value:
+                max_value = abs(matrix[j][i])
+                max_index = j
+        if max_index != i:
+            matrix[[i, max_index]] = matrix[[max_index, i]]
+            vector[i], vector[max_index] = vector[max_index], vector[i]
+    return matrix, vector
+
+def jacobi_method(matrix, vector, max_iterations=1000, tolerance=1e-5):
+    """
+    Solve the system of linear equations using the Jacobi method.
+
+    Parameters:
+    matrix (np.ndarray): The coefficient matrix.
+    vector (np.ndarray): The vector of constants.
+    max_iterations (int): The maximum number of iterations.
+    tolerance (float): The tolerance for convergence.
+
+    Returns:
+    tuple: The solution vector and a boolean indicating convergence.
+    """
+    n = len(matrix)
+    x = np.zeros_like(vector)
+    for iteration in range(max_iterations):
+        x_new = np.zeros_like(x)
+        for i in range(n):
+            s = sum(matrix[i][j] * x[j] for j in range(n) if j != i)
+            x_new[i] = (vector[i] - s) / matrix[i][i]
+        print(f"Jacobi Iteration {iteration}: {x_new}")
+        if np.allclose(x, x_new, atol=tolerance):
+            return x_new, True
+        x = x_new
+    return x, False
+
+def gauss_seidel_method(matrix, vector, max_iterations=1000, tolerance=1e-5):
+    """
+    Solve the system of linear equations using the Gauss-Seidel method.
+
+    Parameters:
+    matrix (np.ndarray): The coefficient matrix.
+    vector (np.ndarray): The vector of constants.
+    max_iterations (int): The maximum number of iterations.
+    tolerance (float): The tolerance for convergence.
+
+    Returns:
+    tuple: The solution vector and a boolean indicating convergence.
+    """
+    n = len(matrix)
+    x = np.zeros_like(vector)
+    for iteration in range(max_iterations):
+        x_new = np.copy(x)
+        for i in range(n):
+            s1 = sum(matrix[i][j] * x_new[j] for j in range(i))
+            s2 = sum(matrix[i][j] * x[j] for j in range(i + 1, n))
+            x_new[i] = (vector[i] - s1 - s2) / matrix[i][i]
+        print(f"Gauss-Seidel Iteration {iteration}: {x_new}")
+        if np.allclose(x, x_new, atol=tolerance):
+            return x_new, True
+        x = x_new
+    return x, False
+
+def solve_system(matrix, vector, method):
+    """
+    Solve the system of linear equations using the specified method.
+
+    Parameters:
+    matrix (list of list of float): The coefficient matrix.
+    vector (list of float): The vector of constants.
+    method (str): The method to use ('jacobi' or 'gauss-seidel').
+    """
+    matrix = np.array(matrix, dtype=float)
+    vector = np.array(vector, dtype=float)
+
+    if not is_dominant_diagonal(matrix):
+        print(" Despite not having a dominant diagonal, the results are:")
+        matrix, vector = swap_rows_for_dominant_diagonal(matrix, vector)
+        if not is_dominant_diagonal(matrix):
+            if method == 'jacobi':
+                x, converged = jacobi_method(matrix, vector)
+                if converged:
+                    print(f"Jacobi: Despite not having a dominant diagonal, the results are: {x}")
+                else:
+                    print("Jacobi: The system does not converge.")
+            elif method == 'gauss-seidel':
+                x, converged = gauss_seidel_method(matrix, vector)
+                if converged:
+                    print(f"Gauss-Seidel: Despite not having a dominant diagonal, the results are: {x}")
+                else:
+                    print("Gauss-Seidel: The system does not converge.")
+            return
+
+    if method == 'jacobi':
+        x, converged = jacobi_method(matrix, vector)
+        if converged:
+            print(f"Jacobi: The solutions are: {x}")
+        else:
+            print("Jacobi: The system does not converge.")
+    elif method == 'gauss-seidel':
+        x, converged = gauss_seidel_method(matrix, vector)
+        if converged:
+            print(f"Gauss-Seidel: The solutions are: {x}")
+        else:
+            print("Gauss-Seidel: The system does not converge.")
+
+def main():
+    """
+    Main function to choose the method and solve the system.
+    """
+    matrix = [
+        [4, 2, 0],
+        [2, 10, 4],
+        [0, 4, 5]
+    ]
+    vector = [2, 6, 5]
+
+    while True:
+        print("--------------------------------")
+        print("Choose the method to solve the system:")
+        print("1. Jacobi Method")
+        print("2. Gauss-Seidel Method")
+        print("3. Exit")
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            solve_system(matrix, vector, 'jacobi')
+        elif choice == '2':
+            solve_system(matrix, vector, 'gauss-seidel')
+        elif choice == '3':
+            break
+        else:
+            print("Invalid choice. Please enter 1, 2, or 3.")
+
+if __name__ == "__main__":
+    main()
