@@ -1,0 +1,70 @@
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    PINK = '\033[38;5;206m'
+    PURPLE = '\033[38;5;135m'
+    WHITE = '\033[38;5;15m'
+
+def spline_interpolation(x_data, y_data, x_interpolate):
+    if len(x_data) != len(y_data):
+        raise ValueError("x_data and y_data must have the same length.")
+    if len(set(x_data)) != len(x_data):
+        raise ValueError("x_data must contain unique values.")
+
+    n = len(x_data)
+
+    a = list(y_data)
+    b = [0.0] + [(a[i] - a[i - 1]) / (x_data[i] - x_data[i - 1]) for i in range(1, n)]
+    c = [0.0] * n
+    d = [0.0] * (n - 1)
+
+    for i in range(1, n - 1):
+        d[i] = 6 * ((a[i + 1] - a[i]) / (x_data[i + 1] - x_data[i]) -
+                    (a[i] - a[i - 1]) / (x_data[i] - x_data[i - 1]))
+
+    l, mu, z = [0.0] * n, [0.0] * n, [0.0] * n
+    l[0] = 1
+    mu[0] = 0
+    z[0] = 0
+
+    for i in range(1, n - 1):
+        l[i] = 2 * (x_data[i + 1] - x_data[i - 1]) - (x_data[i] - x_data[i - 1]) * mu[i - 1]
+        mu[i] = (x_data[i + 1] - x_data[i]) / l[i]
+        z[i] = (d[i] - (x_data[i] - x_data[i - 1]) * z[i - 1]) / l[i]
+
+    l[n - 1] = 1
+    z[n - 1] = 0
+    c[n - 1] = 0
+
+    for j in range(n - 2, -1, -1):
+        c[j] = z[j] - mu[j] * c[j + 1]
+        b[j] = (a[j + 1] - a[j]) / (x_data[j + 1] - x_data[j]) - (x_data[j + 1] - x_data[j]) * (c[j + 1] + 2 * c[j]) / 3
+        d[j] = (c[j + 1] - c[j]) / (3 * (x_data[j + 1] - x_data[j]))
+
+    # Step 3: Evaluate the spline at x_interpolate
+    for i in range(n - 1):
+        if x_data[i] <= x_interpolate <= x_data[i + 1]:
+            dx = x_interpolate - x_data[i]
+            return a[i] + b[i] * dx + c[i] * dx**2 + d[i] * dx**3
+
+    raise ValueError("x_interpolate is out of the bounds of x_data.")
+
+if __name__ == '__main__':
+    table_points = [(0, 0), (1, 0.8415), (2, 0.9093), (3, 0.1411), (4, -0.7568), (5, -0.9589), (6, -0.2794)]
+    x = 1.28
+    x_data, y_data = zip(*table_points)
+
+    print(bcolors.PINK, "----------------- Spline Interpolation Method -----------------\n", bcolors.ENDC)
+    print(bcolors.PURPLE, "Table Points: ", bcolors.ENDC, table_points)
+    print(bcolors.PURPLE, "Finding an approximation for the point: ", bcolors.ENDC, x, '\n')
+    interpolated_value = spline_interpolation(x_data, y_data, x)
+    print(bcolors.WHITE, f"Interpolation Result: ", bcolors.ENDC, interpolated_value)
+
+    print(bcolors.PINK, "\n------------------------------------------------------", bcolors.ENDC)
