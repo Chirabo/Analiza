@@ -1,0 +1,73 @@
+
+import numpy as np
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    PINK = '\033[38;5;206m'
+    PURPLE = '\033[38;5;135m'
+    WHITE = '\033[38;5;15m'
+
+
+def lagrange_interpolation(x_data, y_data, x):
+    n = len(x_data)
+    result = 0.0
+
+    x_data = np.array(x_data)
+    y_data = np.array(y_data)
+
+    for i in range(n):
+        term = y_data[i]
+        term *= np.prod([(x - x_data[j]) / (x_data[i] - x_data[j]) for j in range(n) if j != i])
+        result += term
+
+    return result
+
+def neville(x_data, y_data, x_interpolate):
+    if len(x_data) != len(y_data):
+        raise ValueError("x_data and y_data must have the same length.")
+    if len(set(x_data)) != len(x_data):
+        raise ValueError("x_data must contain unique values.")
+
+    n = len(x_data)
+
+    tableau = [[0.0] * n for _ in range(n)]
+
+    for i in range(n):
+        tableau[i][0] = y_data[i]
+
+    for j in range(1, n):
+        for i in range(n - j):
+            denominator = x_data[i] - x_data[i + j]
+            if denominator == 0:
+                raise ZeroDivisionError(f"Duplicate x_data values found: x_data[{i}] = x_data[{i + j}]")
+
+            tableau[i][j] = ((x_interpolate - x_data[i + j]) * tableau[i][j - 1] -
+                             (x_interpolate - x_data[i]) * tableau[i + 1][j - 1]) / denominator
+
+    return tableau[0][n - 1]
+
+
+
+if __name__ == '__main__':
+    table_points = [(0, 0), (1, 0.8415), (2, 0.9093), (3, 0.1411), (4, -0.7568), (5, -0.9589), (6, -0.2794)]
+    x = 1.28
+
+    print(bcolors.PINK, "----------------- Interpolation Methods -----------------\n", bcolors.ENDC)
+    print(bcolors.PURPLE, "Table Points: ", bcolors.ENDC, table_points)
+    print(bcolors.PURPLE, "Finding an approximation for the point: ", bcolors.ENDC, x, '\n')
+    x_data, y_data = zip(*table_points)
+    result_lagrange = lagrange_interpolation(x_data, y_data, x)
+    print(bcolors.WHITE, f"Lagrange Interpolation Result:", bcolors.ENDC, result_lagrange)
+
+    interpolated_value = neville(x_data, y_data, x)
+    print(bcolors.WHITE, f"Nevil Interpolation Result: ", bcolors.ENDC, interpolated_value)
+
+
+    print(bcolors.PINK, "\n------------------------------------------------------", bcolors.ENDC)
