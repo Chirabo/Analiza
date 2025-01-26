@@ -1,0 +1,37 @@
+import numpy as np
+
+class BColors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    PINK = '\033[38;5;206m'
+    PURPLE = '\033[38;5;135m'
+    WHITE = '\033[38;5;15m'
+
+augmented_matrix = np.array([
+    [10, 8, 1, -7],
+    [4, 10, -5, 2],
+    [5, 1, 10, 1.5]
+], dtype=float)
+
+def gauss_jordan_elimination(matrix):
+    rows, cols = matrix.shape
+
+    for i in range(rows):
+        matrix[i] = matrix[i] / matrix[i, i]
+        for j in range(rows):
+            if i != j:
+                matrix[j] -= matrix[j, i] * matrix[i]
+
+    return matrix
+
+result = gauss_jordan_elimination(augmented_matrix)
+
+solution = result[:, -1]  
+print(f"{BColors.PINK}The solution by the Gauss-Jordan elimination method is:{BColors.ENDC}")
+print(f"a = {solution[0]:.4f}, b = {solution[1]:.4f}, c = {solution[2]:.4f}")
