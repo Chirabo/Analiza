@@ -1,0 +1,42 @@
+import math
+
+
+class BColors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    PINK = '\033[38;5;206m'
+    PURPLE = '\033[38;5;135m'
+    WHITE = '\033[38;5;15m'
+
+
+def trapezoidal_rule(func, lower_limit, upper_limit, subintervals):
+    h = (upper_limit - lower_limit) / subintervals
+    integral = 0.5 * (func(lower_limit) + func(upper_limit))  # Endpoints contribution
+
+    for i in range(1, subintervals):
+        x_i = lower_limit + i * h
+        integral += func(x_i)
+
+    return integral * h
+
+
+if __name__ == "__main__":
+    # Define the function to integrate
+    func = lambda x: math.exp(x ** 2)
+
+    # Compute the integral
+    lower_limit = 0
+    upper_limit = 1
+    subintervals = 2
+    result = trapezoidal_rule(func, lower_limit, upper_limit, subintervals)
+
+    # Print the result with formatting
+    print(
+        f"{BColors.PINK}Approximate integral: {result:.6f}{BColors.ENDC}"
+    )
